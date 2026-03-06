@@ -1,21 +1,27 @@
 const sanitizeUrl = (url) => {
     if (!url) return '';
-    // Remove literal quotes, encoded quotes (%22), and single quotes
-    let clean = url.trim()
+    console.log("[Config] v3 Raw Input:", url);
+
+    // Nuclear Option: Find first "http" and take everything until next quote/tick/space/percent
+    const match = url.match(/(https?:\/+[^\s"'%]+)/);
+    let clean = match ? match[0] : url.trim()
         .replace(/"/g, '')
         .replace(/'/g, '')
         .replace(/%22/g, '');
 
-    // Fix common missing slash errors: https:/ -> https://
-    if (clean.startsWith('https:/') && !clean.startsWith('https://')) {
+    // Fix missing slashes (common in user input like https:/render.com)
+    if (clean.includes('https:/') && !clean.includes('https://')) {
         clean = clean.replace('https:/', 'https://');
     }
-    // Remove trailing slash
-    clean = clean.endsWith('/') ? clean.slice(0, -1) : clean;
 
-    console.log(`[Config] Sanitized URL: "${url}" -> "${clean}"`);
+    // Final trim of trailing slashes
+    clean = clean.replace(/\/+$/, '');
+
+    console.log(`[Config] v3 Sanitized: -> "${clean}"`);
     return clean;
 };
+
+console.log("[Config] v3 Module Loaded");
 
 console.log("[Config] Raw VITE_API_BASE:", import.meta.env.VITE_API_BASE);
 export const API_BASE = sanitizeUrl(import.meta.env.VITE_API_BASE || 'http://localhost:3000');
