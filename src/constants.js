@@ -1,17 +1,23 @@
 const sanitizeUrl = (url) => {
     if (!url) return '';
-    let clean = url.trim().replace(/"/g, '').replace(/'/g, '');
+    // Remove literal quotes, encoded quotes (%22), and single quotes
+    let clean = url.trim()
+        .replace(/"/g, '')
+        .replace(/'/g, '')
+        .replace(/%22/g, '');
+
     // Fix common missing slash errors: https:/ -> https://
     if (clean.startsWith('https:/') && !clean.startsWith('https://')) {
         clean = clean.replace('https:/', 'https://');
     }
-    if (clean.startsWith('http:/') && !clean.startsWith('http://')) {
-        clean = clean.replace('http:/', 'http://');
-    }
     // Remove trailing slash
-    return clean.endsWith('/') ? clean.slice(0, -1) : clean;
+    clean = clean.endsWith('/') ? clean.slice(0, -1) : clean;
+
+    console.log(`[Config] Sanitized URL: "${url}" -> "${clean}"`);
+    return clean;
 };
 
+console.log("[Config] Raw VITE_API_BASE:", import.meta.env.VITE_API_BASE);
 export const API_BASE = sanitizeUrl(import.meta.env.VITE_API_BASE || 'http://localhost:3000');
 export const SOCKET_URL = sanitizeUrl(import.meta.env.VITE_SOCKET_URL || 'http://localhost:3000');
 
